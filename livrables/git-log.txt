@@ -1,0 +1,23 @@
+6a8e49a (HEAD -> main, origin/main, origin/HEAD) docs: add technical readme
+f74fd30 fix(tests): clean db before tests
+c01fc90 chore(recette): add bruno
+93e593a chore(docker): add phpmyadmin service
+e53436f refactor(controllers): refactor api routes
+20cf54d chore(docker): add restart policy
+cb17e2d test(api): cover controller error responses
+b56e6e9 feat(api): add global error handling
+2cd8323 feat(reservations): add cancellation endpoint
+49137a7 feat(reservations): add create and list endpoints
+f33cb87 feat(reservations): add quote endpoint
+29a8917 feat(spectators): add create and list endpoints
+978006b feat(sessions): add create and list endpoints
+985b379 feat(grandstands): add create and list endpoints
+a644e80 feat(repository): add jpa repositories
+fd86ddb feat(model): add business entities
+ccf0a74 chore(quality): fix sonar command
+b82bbd6 feat(model): add business enums
+d85bfec feat(api): init spring boot api
+f241ece docs: add the statement
+8cd8081 chore(quality): add script to run sonar
+3d5c1db chore(quality): setup husky commit linter
+519f229 chore: test commitlint

@@ -11,11 +11,17 @@ if [ -z "$SONAR_TOKEN" ]; then
   exit 1
 fi
 
+echo "Lancement des tests Maven..."
+./mvnw clean verify
+
+echo "Lancement de l'analyse Sonar..."
 mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
   -Dsonar.projectKey=f1-quality-gate \
   -Dsonar.projectName="F1 Quality Gate" \
   -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token="$SONAR_TOKEN"
+  -Dsonar.token="$SONAR_TOKEN" \
+  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+  -Dsonar.coverage.exclusions="**/model/entity/**,**/*Application.java"
 
 echo ""
 echo "Sonar dashboard:"

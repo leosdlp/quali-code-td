@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.f1gp.f1_quality_gate.dto.reservation.QuoteResponse;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationResponse;
+import com.f1gp.f1_quality_gate.exception.BusinessConflictException;
 import com.f1gp.f1_quality_gate.exception.ResourceNotFoundException;
 import com.f1gp.f1_quality_gate.model.entity.Grandstand;
 import com.f1gp.f1_quality_gate.model.entity.RaceSession;
@@ -110,7 +111,7 @@ class ReservationServiceTest {
                 .thenReturn(List.of(existingReservation));
 
         assertThatThrownBy(() -> reservationService.createReservation(request))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(BusinessConflictException.class)
                 .hasMessage("Pas assez de places sur la session SUNDAY — RACE");
     }
 
@@ -184,7 +185,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
 
         assertThatThrownBy(() -> reservationService.cancelReservation(10L))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(BusinessConflictException.class)
                 .hasMessage("Réservation déjà annulée");
     }
 

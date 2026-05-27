@@ -1,13 +1,16 @@
 package com.f1gp.f1_quality_gate.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.f1gp.f1_quality_gate.dto.spectator.SpectatorRequest;
 import com.f1gp.f1_quality_gate.dto.spectator.SpectatorResponse;
+import com.f1gp.f1_quality_gate.exception.BusinessConflictException;
 import com.f1gp.f1_quality_gate.model.entity.Spectator;
 import com.f1gp.f1_quality_gate.model.enums.LoyaltyTier;
 import com.f1gp.f1_quality_gate.repository.SpectatorRepository;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.stereotype.Service;
 
 @Service
 public class SpectatorService {
@@ -20,7 +23,7 @@ public class SpectatorService {
 
     public SpectatorResponse createSpectator(SpectatorRequest request) {
         if (spectatorRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email déjà utilisé");
+            throw new BusinessConflictException("Email déjà utilisé");
         }
 
         Spectator spectator = new Spectator(

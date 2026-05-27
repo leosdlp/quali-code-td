@@ -9,6 +9,7 @@ import com.f1gp.f1_quality_gate.dto.reservation.CancelResultResponse;
 import com.f1gp.f1_quality_gate.dto.reservation.QuoteRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationResponse;
+import com.f1gp.f1_quality_gate.exception.BusinessConflictException;
 import com.f1gp.f1_quality_gate.exception.ResourceNotFoundException;
 import com.f1gp.f1_quality_gate.model.entity.Grandstand;
 import com.f1gp.f1_quality_gate.model.entity.RaceSession;
@@ -105,7 +106,7 @@ public class ReservationService {
             int remainingSeats = grandstand.getCapacity() - alreadyBookedSeats;
 
             if (remainingSeats < requestedSeats) {
-                throw new IllegalStateException("Pas assez de places sur la session " + session.getDay() + " — " + session.getType());
+                throw new BusinessConflictException("Pas assez de places sur la session " + session.getDay() + " — " + session.getType());
             }
         }
     }
@@ -130,7 +131,7 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Réservation introuvable"));
 
         if (reservation.getStatus() == ReservationStatus.CANCELLED) {
-            throw new IllegalStateException("Réservation déjà annulée");
+            throw new BusinessConflictException("Réservation déjà annulée");
         }
 
         LocalDateTime cancelledAt = LocalDateTime.now();

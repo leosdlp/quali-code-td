@@ -1,24 +1,26 @@
 package com.f1gp.f1_quality_gate.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.f1gp.f1_quality_gate.dto.spectator.SpectatorRequest;
-import com.f1gp.f1_quality_gate.dto.spectator.SpectatorResponse;
-import com.f1gp.f1_quality_gate.model.entity.Spectator;
-import com.f1gp.f1_quality_gate.model.enums.LoyaltyTier;
-import com.f1gp.f1_quality_gate.repository.SpectatorRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.f1gp.f1_quality_gate.dto.spectator.SpectatorRequest;
+import com.f1gp.f1_quality_gate.dto.spectator.SpectatorResponse;
+import com.f1gp.f1_quality_gate.exception.BusinessConflictException;
+import com.f1gp.f1_quality_gate.model.entity.Spectator;
+import com.f1gp.f1_quality_gate.model.enums.LoyaltyTier;
+import com.f1gp.f1_quality_gate.repository.SpectatorRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SpectatorServiceTest {
@@ -96,7 +98,7 @@ class SpectatorServiceTest {
         when(spectatorRepository.existsByEmail("alice@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> spectatorService.createSpectator(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessConflictException.class)
                 .hasMessage("Email déjà utilisé");
     }
 

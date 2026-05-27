@@ -1,5 +1,11 @@
 package com.f1gp.f1_quality_gate.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.f1gp.f1_quality_gate.dto.reservation.CancelResultResponse;
 import com.f1gp.f1_quality_gate.dto.reservation.QuoteRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationResponse;
@@ -13,9 +19,6 @@ import com.f1gp.f1_quality_gate.repository.GrandstandRepository;
 import com.f1gp.f1_quality_gate.repository.RaceSessionRepository;
 import com.f1gp.f1_quality_gate.repository.ReservationRepository;
 import com.f1gp.f1_quality_gate.repository.SpectatorRepository;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ReservationService {
@@ -25,19 +28,22 @@ public class ReservationService {
     private final GrandstandRepository grandstandRepository;
     private final RaceSessionRepository raceSessionRepository;
     private final PricingService pricingService;
+    private final RefundService refundService;
 
     public ReservationService(
-            ReservationRepository reservationRepository,
-            SpectatorRepository spectatorRepository,
-            GrandstandRepository grandstandRepository,
-            RaceSessionRepository raceSessionRepository,
-            PricingService pricingService
+        ReservationRepository reservationRepository,
+        SpectatorRepository spectatorRepository,
+        GrandstandRepository grandstandRepository,
+        RaceSessionRepository raceSessionRepository,
+        PricingService pricingService,
+        RefundService refundService
     ) {
         this.reservationRepository = reservationRepository;
         this.spectatorRepository = spectatorRepository;
         this.grandstandRepository = grandstandRepository;
         this.raceSessionRepository = raceSessionRepository;
         this.pricingService = pricingService;
+        this.refundService = refundService;
     }
 
     public ReservationResponse createReservation(ReservationRequest request) {
@@ -116,6 +122,47 @@ public class ReservationService {
                 reservation.getBookedAt(),
                 reservation.getCancelledAt(),
                 reservation.getRefundedAmount()
+        );
+    }
+
+    public CancelResultResponse cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Réservation introuvable"));
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new IllegalStateException("Réservation déjà annulée");
+        }
+
+        LocalDateTime cancelledAt = LocalDateTime.now();
+        LocalDateTime firstSessionDate = reservation.getSessions()
+                .stream()
+                .map(RaceSession::getDate)
+                .min(LocalDateTime::compareTo)
+                .orElseThrow(() -> new ResourceNotFoundException("Session introuvable"));
+
+        long daysUntilFirstSession = refundService.calculateDaysUntilFirstSession(
+                firstSessionDate.toLocalDate(),
+                cancelledAt.toLocalDate()
+        );
+
+        double refundRate = refundService.calculateRefundRate(
+                firstSessionDate.toLocalDate(),
+                cancelledAt.toLocalDate()
+        );
+
+        double refundAmount = refundService.calculateRefundAmount(reservation.getTotalPrice(), refundRate);
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservation.setCancelledAt(cancelledAt);
+        reservation.setRefundedAmount(refundAmount);
+
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        return new CancelResultResponse(
+                toResponse(savedReservation),
+                refundAmount,
+                refundRate,
+                daysUntilFirstSession
         );
     }
 }

@@ -1,10 +1,20 @@
 package com.f1gp.f1_quality_gate.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.f1gp.f1_quality_gate.dto.reservation.QuoteResponse;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationRequest;
@@ -23,15 +33,6 @@ import com.f1gp.f1_quality_gate.repository.GrandstandRepository;
 import com.f1gp.f1_quality_gate.repository.RaceSessionRepository;
 import com.f1gp.f1_quality_gate.repository.ReservationRepository;
 import com.f1gp.f1_quality_gate.repository.SpectatorRepository;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
@@ -53,6 +54,9 @@ class ReservationServiceTest {
 
     @InjectMocks
     private ReservationService reservationService;
+
+    @Mock
+    private RefundService refundService;
 
     @Test
     void createReservation_shouldCreateConfirmedReservation() {
@@ -137,6 +141,51 @@ class ReservationServiceTest {
         assertThat(responses).hasSize(1);
         assertThat(responses.getFirst().spectatorId()).isEqualTo(1L);
         verify(reservationRepository).findBySpectatorId(1L);
+    }
+
+    @Test
+    void cancelReservation_shouldCancelReservationWithFullRefund() {
+        Spectator spectator = createSpectator();
+        Grandstand grandstand = createGrandstand(200);
+        RaceSession session = createSession();
+        Reservation reservation = createReservation(spectator, grandstand, session, 2);
+
+        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+        when(refundService.calculateDaysUntilFirstSession(any(), any())).thenReturn(15L);
+        when(refundService.calculateRefundRate(any(), any())).thenReturn(1.0);
+        when(refundService.calculateRefundAmount(648.0, 1.0)).thenReturn(648.0);
+        when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = reservationService.cancelReservation(10L);
+
+        assertThat(response.reservation().status()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(response.refund()).isEqualTo(648.0);
+        assertThat(response.rate()).isEqualTo(1.0);
+        assertThat(response.daysUntilFirstSession()).isEqualTo(15L);
+    }
+
+    @Test
+    void cancelReservation_shouldThrowExceptionWhenReservationDoesNotExist() {
+        when(reservationRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reservationService.cancelReservation(10L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Réservation introuvable");
+    }
+
+    @Test
+    void cancelReservation_shouldThrowExceptionWhenAlreadyCancelled() {
+        Spectator spectator = createSpectator();
+        Grandstand grandstand = createGrandstand(200);
+        RaceSession session = createSession();
+        Reservation reservation = createReservation(spectator, grandstand, session, 2);
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+
+        assertThatThrownBy(() -> reservationService.cancelReservation(10L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Réservation déjà annulée");
     }
 
     private Spectator createSpectator() {

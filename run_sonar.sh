@@ -16,3 +16,7 @@ mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
   -Dsonar.projectName="F1 Quality Gate" \
   -Dsonar.host.url=http://localhost:9000 \
   -Dsonar.token="$SONAR_TOKEN"
+
+echo ""
+echo "Sonar dashboard:"
+grep "dashboardUrl" target/sonar/report-task.txt | cut -d'=' -f2-

@@ -1,0 +1,33 @@
+info:
+  name: Quote jeune GOLD
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api_url}}/reservations/quote"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "grandstandId": 1,
+        "sessionIds": [
+          1,
+          2,
+          3
+        ],
+        "seatCount": 2,
+        "spectatorId": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

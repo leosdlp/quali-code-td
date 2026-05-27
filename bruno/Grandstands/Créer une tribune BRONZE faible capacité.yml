@@ -1,0 +1,31 @@
+info:
+  name: Créer une tribune BRONZE faible capacité
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{api_url}}/grandstands"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Tribune Test Capacity",
+        "location": "Virage 1",
+        "category": "BRONZE",
+        "capacity": 2,
+        "basePrice": 80.0,
+        "covered": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

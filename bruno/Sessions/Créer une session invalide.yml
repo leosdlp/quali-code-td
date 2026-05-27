@@ -1,0 +1,29 @@
+info:
+  name: Créer une session invalide
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{api_url}}/sessions"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "day": null,
+        "type": null,
+        "date": null,
+        "priceMultiplier": 0
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

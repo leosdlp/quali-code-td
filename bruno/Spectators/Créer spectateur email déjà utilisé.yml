@@ -1,0 +1,29 @@
+info:
+  name: Créer spectateur email déjà utilisé
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{api_url}}/spectators"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Alice Duplicate",
+        "email": "alice@example.com",
+        "birthDate": "1990-04-12",
+        "loyaltyTier": "SILVER"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

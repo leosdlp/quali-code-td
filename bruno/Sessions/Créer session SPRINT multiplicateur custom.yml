@@ -1,0 +1,29 @@
+info:
+  name: Créer session SPRINT multiplicateur custom
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{api_url}}/sessions"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "day": "SATURDAY",
+        "type": "SPRINT",
+        "date": "2026-07-18T11:00:00",
+        "priceMultiplier": 1.3
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,31 @@
+info:
+  name: Créer une tribune invalide
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{api_url}}/grandstands"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "",
+        "location": "",
+        "category": null,
+        "capacity": 0,
+        "basePrice": 0,
+        "covered": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

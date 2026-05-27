@@ -1,0 +1,4 @@
+name: TD_clean_code_local
+variables:
+  - name: api_url
+    value: http://localhost:8081/api

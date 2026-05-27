@@ -13,5 +13,19 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
+  phpmyadmin:
+    image: phpmyadmin:5.2.3
+    container_name: f1-quality-gate-phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=database
+      - PMA_USER=f1_user
+      - PMA_PASSWORD=f1_password
+    depends_on:
+      - database
+    restart: unless-stopped
+
 volumes:
   mariadb_data:

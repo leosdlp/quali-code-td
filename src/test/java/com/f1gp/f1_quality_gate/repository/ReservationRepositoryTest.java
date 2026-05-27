@@ -1,6 +1,15 @@
 package com.f1gp.f1_quality_gate.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.f1gp.f1_quality_gate.model.entity.Grandstand;
 import com.f1gp.f1_quality_gate.model.entity.RaceSession;
@@ -11,13 +20,6 @@ import com.f1gp.f1_quality_gate.model.enums.Day;
 import com.f1gp.f1_quality_gate.model.enums.LoyaltyTier;
 import com.f1gp.f1_quality_gate.model.enums.ReservationStatus;
 import com.f1gp.f1_quality_gate.model.enums.SessionType;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -34,6 +36,14 @@ class ReservationRepositoryTest {
 
     @Autowired
     private SpectatorRepository spectatorRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        reservationRepository.deleteAll();
+        spectatorRepository.deleteAll();
+        grandstandRepository.deleteAll();
+        raceSessionRepository.deleteAll();
+    }
 
     @Test
     void findBySpectatorId_shouldReturnMatchingReservations() {

@@ -1,20 +1,38 @@
 package com.f1gp.f1_quality_gate.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import com.f1gp.f1_quality_gate.model.entity.Grandstand;
-import com.f1gp.f1_quality_gate.model.enums.Category;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import com.f1gp.f1_quality_gate.model.entity.Grandstand;
+import com.f1gp.f1_quality_gate.model.enums.Category;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class GrandstandRepositoryTest {
 
     @Autowired
+    private ReservationRepository reservationRepository;
+
+    @Autowired
     private GrandstandRepository grandstandRepository;
+
+    @Autowired
+    private RaceSessionRepository raceSessionRepository;
+
+    @Autowired
+    private SpectatorRepository spectatorRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        reservationRepository.deleteAll();
+        spectatorRepository.deleteAll();
+        grandstandRepository.deleteAll();
+        raceSessionRepository.deleteAll();
+    }
 
     @Test
     void findByCategory_shouldReturnMatchingGrandstands() {
@@ -25,9 +43,9 @@ class GrandstandRepositoryTest {
         grandstandRepository.save(goldGrandstand);
 
         assertThat(grandstandRepository.findByCategory(Category.GOLD))
-                .hasSize(1)
-                .first()
-                .extracting(Grandstand::getName)
-                .isEqualTo("Gold Stand");
+            .hasSize(1)
+            .first()
+            .extracting(Grandstand::getName)
+            .isEqualTo("Gold Stand");
     }
 }

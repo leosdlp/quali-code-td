@@ -2,6 +2,7 @@ services:
   database:
     image: mariadb:11.8.5-ubi9
     container_name: f1-quality-gate-db
+    restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: f1_quality_gate

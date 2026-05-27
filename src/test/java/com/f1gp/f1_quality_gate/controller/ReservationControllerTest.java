@@ -20,6 +20,8 @@ import com.f1gp.f1_quality_gate.dto.reservation.QuoteRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.QuoteResponse;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationRequest;
 import com.f1gp.f1_quality_gate.dto.reservation.ReservationResponse;
+import com.f1gp.f1_quality_gate.exception.BusinessConflictException;
+import com.f1gp.f1_quality_gate.exception.ResourceNotFoundException;
 import com.f1gp.f1_quality_gate.model.enums.LoyaltyTier;
 import com.f1gp.f1_quality_gate.model.enums.ReservationStatus;
 import com.f1gp.f1_quality_gate.service.PricingService;
@@ -155,5 +157,67 @@ class ReservationControllerTest {
         .andExpect(jsonPath("$.refund").value(648.0))
         .andExpect(jsonPath("$.rate").value(1.0))
         .andExpect(jsonPath("$.reservation.status").value("CANCELLED"));
+    }
+
+    @Test
+    void quote_shouldReturnNotFoundWhenGrandstandDoesNotExist() throws Exception {
+        QuoteRequest request = new QuoteRequest(999L, List.of(1L), 2, null);
+
+        when(pricingService.quote(any(QuoteRequest.class)))
+            .thenThrow(new ResourceNotFoundException("Tribune introuvable"));
+
+        mockMvc.perform(post("/reservations/quote")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("Tribune introuvable"));
+    }
+
+    @Test
+    void createReservation_shouldReturnConflictWhenNotEnoughSeats() throws Exception {
+        ReservationRequest request = new ReservationRequest(1L, 2L, List.of(3L), 2);
+
+        when(reservationService.createReservation(any(ReservationRequest.class)))
+            .thenThrow(new BusinessConflictException("Pas assez de places sur la session SUNDAY — RACE"));
+
+        mockMvc.perform(post("/reservations")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.error").value("Pas assez de places sur la session SUNDAY — RACE"));
+    }
+
+    @Test
+    void createReservation_shouldReturnNotFoundWhenSpectatorDoesNotExist() throws Exception {
+        ReservationRequest request = new ReservationRequest(999L, 2L, List.of(3L), 2);
+
+        when(reservationService.createReservation(any(ReservationRequest.class)))
+            .thenThrow(new ResourceNotFoundException("Spectateur introuvable"));
+
+        mockMvc.perform(post("/reservations")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("Spectateur introuvable"));
+    }
+
+    @Test
+    void cancelReservation_shouldReturnNotFoundWhenReservationDoesNotExist() throws Exception {
+        when(reservationService.cancelReservation(999L))
+            .thenThrow(new ResourceNotFoundException("Réservation introuvable"));
+
+        mockMvc.perform(post("/reservations/999/cancel"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("Réservation introuvable"));
+    }
+
+    @Test
+    void cancelReservation_shouldReturnConflictWhenReservationAlreadyCancelled() throws Exception {
+        when(reservationService.cancelReservation(10L))
+            .thenThrow(new BusinessConflictException("Réservation déjà annulée"));
+
+        mockMvc.perform(post("/reservations/10/cancel"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.error").value("Réservation déjà annulée"));
     }
 }
